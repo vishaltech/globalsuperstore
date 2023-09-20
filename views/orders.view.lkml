@@ -17,6 +17,12 @@ view: orders {
     sql: ${TABLE}."ORDER_ID" ;;
   }
 
+  measure: order_count {
+    label: "Order Count"
+    type: count_distinct
+    sql:  ${TABLE}."ORDER_ID";;
+  }
+
   dimension_group: order_date {
     type: time
     sql: ${TABLE}."ORDER_DATE" ;;
