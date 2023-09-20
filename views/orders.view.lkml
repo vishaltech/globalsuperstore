@@ -1,15 +1,15 @@
 
 view: orders {
 
-  measure: count {
-    type: count
-    drill_fields: [detail*]
-  }
+  # measure: count {
+  #   type: count
+  #   drill_fields: [detail*]
+  # }
 
-  dimension: row_id {
-    type: number
-    sql: ${TABLE}."ROW_ID" ;;
-  }
+  # dimension: row_id {
+  #   type: number
+  #   sql: ${TABLE}."ROW_ID" ;;
+  # }
 
   dimension: order_id {
     primary_key: yes
@@ -129,7 +129,7 @@ view: orders {
 
   set: detail {
     fields: [
-        row_id,
+
   order_id,
   order_date_time,
   ship_date_time,
