@@ -1,9 +1,5 @@
 
 view: orders {
-  derived_table: {
-    sql: select *
-      from orders o ;;
-  }
 
   measure: count {
     type: count
