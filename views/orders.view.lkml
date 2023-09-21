@@ -1,15 +1,4 @@
-
 view: orders {
-
-  # measure: count {
-  #   type: count
-  #   drill_fields: [detail*]
-  # }
-
-  # dimension: row_id {
-  #   type: number
-  #   sql: ${TABLE}."ROW_ID" ;;
-  # }
 
   dimension: order_id {
     primary_key: yes
@@ -20,7 +9,7 @@ view: orders {
   measure: order_count {
     label: "Order Count"
     type: count_distinct
-    sql:  ${TABLE}."ORDER_ID";;
+    sql: ${TABLE}."ORDER_ID" ;;
   }
 
   dimension_group: order_date {
@@ -60,12 +49,19 @@ view: orders {
 
   dimension: state {
     type: string
+    map_layer_name: "us_states"
     sql: ${TABLE}."STATE" ;;
   }
 
   dimension: country {
     type: string
+    map_layer_name: "countries"
     sql: ${TABLE}."COUNTRY" ;;
+  }
+
+  dimension: region {
+    type: string
+    sql: ${TABLE}."REGION" ;;
   }
 
   dimension: postal_code {
@@ -76,11 +72,6 @@ view: orders {
   dimension: market {
     type: string
     sql: ${TABLE}."MARKET" ;;
-  }
-
-  dimension: region {
-    type: string
-    sql: ${TABLE}."REGION" ;;
   }
 
   dimension: product_id {
@@ -135,30 +126,29 @@ view: orders {
 
   set: detail {
     fields: [
-
-  order_id,
-  order_date_time,
-  ship_date_time,
-  ship_mode,
-  customer_id,
-  customer_name,
-  segment,
-  city,
-  state,
-  country,
-  postal_code,
-  market,
-  region,
-  product_id,
-  category,
-  sub_category,
-  product_name,
-  sales,
-  quantity,
-  discount,
-  profit,
-  shipping_cost,
-  order_priority
+      order_id,
+      order_date_time,
+      ship_date_time,
+      ship_mode,
+      customer_id,
+      customer_name,
+      segment,
+      city,
+      state,
+      country,
+      postal_code,
+      market,
+      region,
+      product_id,
+      category,
+      sub_category,
+      product_name,
+      sales,
+      quantity,
+      discount,
+      profit,
+      shipping_cost,
+      order_priority
     ]
   }
 }
