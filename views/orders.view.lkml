@@ -124,6 +124,104 @@ view: orders {
     sql: ${TABLE}."ORDER_PRIORITY" ;;
   }
 
+  measure: total_profit {
+    label: "Total Profit"
+    type: sum
+    sql: ${TABLE}.profit ;;
+  }
+
+  measure: total_sales {
+    label: "Total Sales"
+    type: sum
+    sql: ${TABLE}.sales ;;
+  }
+
+  measure: avg_discount {
+    label: "Average Discount"
+    type: average
+    sql: ${TABLE}.discount ;;
+  }
+
+  measure: avg_quantity {
+    label: "Average Quantity"
+    type: average
+    sql: ${TABLE}.quantity ;;
+  }
+
+  measure: total_shipping_cost {
+    label: "Total Shipping Cost"
+    type: sum
+    sql: ${TABLE}.shipping_cost ;;
+  }
+  measure: avg_shipping_time {
+    label: "Average Shipping Time"
+    type: average
+    sql: DATEDIFF('DAY', CAST(${TABLE}."ORDER_DATE" AS TIMESTAMP), CAST(${TABLE}."SHIP_DATE" AS TIMESTAMP)) ;;
+  }
+  measure: order_priority_weight {
+    label: "Order Priority Weight"
+    type: average
+    sql: CASE
+           WHEN ${TABLE}.order_priority = 'High' THEN 3
+           WHEN ${TABLE}.order_priority = 'Medium' THEN 2
+           WHEN ${TABLE}.order_priority = 'Low' THEN 1
+           ELSE 0
+         END ;;
+  }
+  measure: profit_efficiency_score_scaled {
+    label: "Profit Efficiency Score"
+    type: number
+    sql: 100 * (
+                (${total_profit} / ${total_sales}) *
+                (1 - (${avg_discount} / ${avg_quantity})) *
+                (1 + (${total_sales} / ${total_shipping_cost})) *
+                (${order_priority_weight} / ${avg_shipping_time})
+              ) ;;
+  }
+  measure: avg_sales_per_customer {
+    type: average
+    sql: ${TABLE}.sales ;;
+  }
+
+  measure: avg_discount_per_customer {
+    type: average
+    sql: ${TABLE}.discount ;;
+  }
+
+  measure: avg_profit_per_customer {
+    type: average
+    sql: ${TABLE}.profit ;;
+  }
+
+  measure: avg_shipping_cost_per_customer {
+    type: average
+    sql: ${TABLE}.shipping_cost ;;
+  }
+
+  measure: avg_quantity_per_customer {
+    type: average
+    sql: ${TABLE}.quantity ;;
+  }
+
+  measure: avg_order_priority_per_customer {
+    type: average
+    sql: CASE
+           WHEN ${TABLE}.order_priority = 'High' THEN 3
+           WHEN ${TABLE}.order_priority = 'Medium' THEN 2
+           WHEN ${TABLE}.order_priority = 'Low' THEN 1
+           ELSE 0
+         END ;;
+  }
+  measure: customer_value_index_scaled {
+    type: number
+    sql: 100 * (
+                LOG(2.71828, 1 + ${avg_sales_per_customer} / (${avg_discount_per_customer} + 0.001)) *
+                LOG(2.71828, 1 + ${avg_profit_per_customer} / (${avg_shipping_cost_per_customer} + 0.001)) *
+                LOG(2.71828, 1 + ${avg_quantity_per_customer} / (${avg_order_priority_per_customer} + 0.001))
+              ) / LOG(2.71828, 1000) ;;
+  }
+
+
   set: detail {
     fields: [
       order_id,
