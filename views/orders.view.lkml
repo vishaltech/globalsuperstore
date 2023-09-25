@@ -31,6 +31,11 @@ view: orders {
     type: string
     sql: ${TABLE}."CUSTOMER_ID" ;;
   }
+  measure: customer_count {
+    label: "Customer Count"
+    type: count_distinct
+    sql: ${customer_id} ;;
+  }
 
   dimension: customer_name {
     type: string
@@ -128,6 +133,8 @@ view: orders {
     label: "Total Profit"
     type: sum
     sql: ${TABLE}.profit ;;
+    value_format: "0"
+    value_format_name: usd_0
   }
 
   measure: total_sales {
@@ -156,8 +163,10 @@ view: orders {
   measure: avg_shipping_time {
     label: "Average Shipping Time"
     type: average
-    sql: DATEDIFF('DAY', CAST(${TABLE}."ORDER_DATE" AS TIMESTAMP), CAST(${TABLE}."SHIP_DATE" AS TIMESTAMP)) ;;
+    sql: DATEDIFF('DAY', CAST(${TABLE}.ORDER_DATE AS TIMESTAMP), CAST(${TABLE}.SHIP_DATE AS TIMESTAMP)) ;;
+    value_format: "0.0"  # This will display the value as a decimal with one digit after the decimal point
   }
+
   measure: order_priority_weight {
     label: "Order Priority Weight"
     type: average
@@ -181,6 +190,7 @@ view: orders {
   measure: avg_sales_per_customer {
     type: average
     sql: ${TABLE}.sales ;;
+    value_format_name: usd_0
   }
 
   measure: avg_discount_per_customer {
@@ -212,14 +222,79 @@ view: orders {
            ELSE 0
          END ;;
   }
-  measure: customer_value_index_scaled {
+    measure: avg_sales {
+      type: number
+      sql: AVG(orders.sales) ;;
+      hidden: yes
+    }
+
+    measure: avg_discountt {
+      type: number
+      sql: AVG(orders.discount) ;;
+      hidden: yes
+    }
+
+    measure: avg_profit {
+      type: number
+      sql: AVG(orders.profit) ;;
+      hidden: yes
+    }
+
+    measure: avg_shipping_cost {
+      type: number
+      sql: AVG(orders.shipping_cost) ;;
+      hidden: yes
+    }
+
+    measure: avg_quantityy {
+      type: number
+      sql: AVG(orders.quantity) ;;
+      hidden: yes
+    }
+
+    measure: avg_order_priority {
+      type: number
+      sql: AVG(CASE
+          WHEN orders.order_priority = 'High' THEN 3
+          WHEN orders.order_priority = 'Medium' THEN 2
+          WHEN orders.order_priority = 'Low' THEN 1
+          ELSE 0
+        END) ;;
+      hidden: yes
+    }
+  measure: customer_value_index {
     type: number
-    sql: 100 * (
-                LOG(2.71828, 1 + ${avg_sales_per_customer} / (${avg_discount_per_customer} + 0.001)) *
-                LOG(2.71828, 1 + ${avg_profit_per_customer} / (${avg_shipping_cost_per_customer} + 0.001)) *
-                LOG(2.71828, 1 + ${avg_quantity_per_customer} / (${avg_order_priority_per_customer} + 0.001))
-              ) / LOG(2.71828, 1000) ;;
+    sql: CASE
+          WHEN AVG(orders.sales) <= 0 THEN 0
+          WHEN AVG(orders.discount) <= 0 OR AVG(orders.shipping_cost) <= 0 THEN 0
+          ELSE (
+              CASE
+                WHEN AVG(orders.sales) / (AVG(orders.discount) + 0.001) <= 0 THEN 0
+                ELSE LN(1 + AVG(orders.sales) / (AVG(orders.discount) + 0.001))
+              END *
+              CASE
+                WHEN AVG(orders.profit) / (AVG(orders.shipping_cost) + 0.001) <= 0 THEN 0
+                ELSE LN(1 + AVG(orders.profit) / (AVG(orders.shipping_cost) + 0.001))
+              END *
+              CASE
+                WHEN AVG(orders.quantity) / (AVG(CASE
+                  WHEN orders.order_priority = 'High' THEN 3
+                  WHEN orders.order_priority = 'Medium' THEN 2
+                  WHEN orders.order_priority = 'Low' THEN 1
+                  ELSE 0
+                END) + 0.001) <= 0 THEN 0
+                ELSE LN(1 + AVG(orders.quantity) / (AVG(CASE
+                  WHEN orders.order_priority = 'High' THEN 3
+                  WHEN orders.order_priority = 'Medium' THEN 2
+                  WHEN orders.order_priority = 'Low' THEN 1
+                  ELSE 0
+                END) + 0.001))
+              END
+          )
+        END ;;
   }
+
+
 
 
   set: detail {

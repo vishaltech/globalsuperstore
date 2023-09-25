@@ -6,6 +6,9 @@ datagroup: globalsuperstorelooker_default_datagroup {
 
 include: "/views/orders.view.lkml" # Assuming the view file is named "orders.view.lkml"
 include: "/views/product_profit.view.lkml"
+include: "/views/customer_churn.view.lkml"
+include: "/views/discount_model.view.lkml"
+
 
 
 explore: orders {
@@ -18,5 +21,14 @@ join: product_profit {
   relationship: many_to_one
   sql_on: ${orders.product_id} =  ${product_profit.product_id};;
 }
-
+  join: customer_churn {
+    type: left_outer
+    relationship: many_to_one
+    sql_on: ${orders.customer_id} =  ${customer_churn.customer_id};;
+  }
+  join: discount_model {
+    type: left_outer
+    relationship: many_to_one
+    sql_on: ${orders.customer_id} =  ${discount_model.customer_id};;
+  }
 }
