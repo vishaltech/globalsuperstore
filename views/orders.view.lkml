@@ -12,9 +12,23 @@ view: orders {
     sql: ${TABLE}."ORDER_ID" ;;
   }
 
-  dimension_group: order_date {
-    type: time
-    sql: ${TABLE}."ORDER_DATE" ;;
+  dimension: order_date {
+    type: date
+    sql: TO_DATE(${TABLE}."ORDER_DATE") ;;
+  }
+
+  measure: latest_year {
+    type: max
+    sql: EXTRACT(YEAR FROM ${order_date}) ;;
+  }
+  measure: new_customer_count {
+    type: count_distinct
+    sql:
+      CASE
+        WHEN MIN(EXTRACT(YEAR FROM ${order_date})) = EXTRACT(YEAR FROM CURRENT_DATE)
+        THEN ${customer_id}
+        ELSE NULL
+      END ;;
   }
 
   dimension_group: ship_date {
@@ -300,7 +314,7 @@ view: orders {
   set: detail {
     fields: [
       order_id,
-      order_date_time,
+      order_date,
       ship_date_time,
       ship_mode,
       customer_id,
